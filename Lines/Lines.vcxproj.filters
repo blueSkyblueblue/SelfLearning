@@ -383,4 +383,7 @@
     </ClCompile>
     <ClCompile Include="src\Shader.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="res\shaders\shader.fs" />
+  </ItemGroup>
 </Project>

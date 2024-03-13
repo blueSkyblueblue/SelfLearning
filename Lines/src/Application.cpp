@@ -1,8 +1,8 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
+#include "Shader.h"
 
 #include <iostream>
-#include <string>
 
 #include "Logger/Logger.h"
 
@@ -95,93 +95,10 @@ int main()
 
 	uint32_t hasError = glGetError();
 	if (hasError != GL_NO_ERROR) LOG_ERROR("There is an error, and error code : {}", hasError);
-	
-	std::string vertexShaderSrc = R"(
-		#version 330 core
-		
-		layout(location = 0) in vec3 a_Position;		
 
-		void main()
-		{
-			gl_Position = vec4(a_Position, 1.0);
-		}
-	)";
+	Shader basicShader("res/shaders/shader.vs", "res/shaders/shader.fs");
 
-	std::string fragmentShaderSrc = R"(
-		#version 330 core
-		
-		out vec4 fragColor;
-
-		void main()
-		{
-			fragColor = vec4(1.0, 1.0, 1.0, 1.0);
-		}
-	)";
-
-	uint32_t vs = glCreateShader(GL_VERTEX_SHADER);
-	const GLchar* shaderSrc = vertexShaderSrc.c_str();
-	glShaderSource(vs, 1, &shaderSrc, nullptr);
-	glCompileShader(vs);
-	int32_t result = {};
-	glGetShaderiv(vs, GL_COMPILE_STATUS, &result);
-	if (!result)
-	{
-		int32_t length = {};
-		glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &length);
-
-		GLchar* infoLog = new GLchar[length];
-		glGetShaderInfoLog(vs, length, &length, infoLog);
-
-		LOG_ERROR("Failed to compile vertex shader: \n \t{0}", infoLog);
-
-		delete[] infoLog;
-	}
-
-	uint32_t fs = glCreateShader(GL_FRAGMENT_SHADER);
-	shaderSrc = fragmentShaderSrc.c_str();
-	glShaderSource(fs, 1, &shaderSrc, nullptr);
-	glCompileShader(fs);
-	glGetShaderiv(fs, GL_COMPILE_STATUS, &result);
-	if (!result)
-	{
-		int32_t length = {};
-		glGetShaderiv(fs, GL_INFO_LOG_LENGTH, &length);
-
-		GLchar* infoLog = new GLchar[length];
-		glGetShaderInfoLog(fs, length, &length, infoLog);
-
-		LOG_ERROR("Failed to compile fragment shader: \n \t{0}", infoLog);
-
-		delete[] infoLog;
-	}
-
-	uint32_t shader = glCreateProgram();
-	glAttachShader(shader, vs);
-	glAttachShader(shader, fs);
-	glLinkProgram(shader);
-
-	glGetProgramiv(shader, GL_LINK_STATUS, &result);
-	if (!result)
-	{
-		int32_t length = {};
-		glGetProgramiv(shader, GL_INFO_LOG_LENGTH, &length);
-
-		GLchar* infoLog = new GLchar[length];
-		glGetProgramInfoLog(shader, length, &length, infoLog);
-
-		LOG_ERROR("Failed to link program: \n \t{0}", infoLog);
-
-		delete[] infoLog;
-	}
-	
-	glDetachShader(shader, fs);
-	glDetachShader(shader, vs);
-	glDeleteShader(fs);
-	glDeleteShader(vs);
-
-	glValidateProgram(shader);
-
-	glUseProgram(shader);
+	basicShader.bind();
 	while (!glfwWindowShouldClose(window))
 	{
 
@@ -196,6 +113,11 @@ int main()
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &ibo);
+	
+	glDeleteVertexArrays(1, &vao);
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
