@@ -34,13 +34,16 @@ project "Lines"
 
 	defines 
 	{
-		"GLFW_INCLUDE_NONE"
+		"GLFW_INCLUDE_NONE",
+		"SPDLOG_COMPILED_LIB"
 	}
 
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
+		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/vendor/**.h",
+		"%{prj.name}/vendor/**.cpp"
 	}
 
 	includedirs
