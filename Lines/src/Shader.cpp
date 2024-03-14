@@ -6,6 +6,7 @@
 
 
 Shader::Shader(const std::string& vsPath, const std::string& fsPath)
+	: m_UniformLocations {}, m_Shader {}
 {
 	std::string vsCode;
 	std::string fsCode;
@@ -66,6 +67,45 @@ void Shader::bind() const
 void Shader::unbind() const
 {
 	glUseProgram(0);
+}
+
+void Shader::setUnifrom1f(const std::string& name, float value)
+{
+	if (m_UniformLocations.find(name) != m_UniformLocations.end())
+	{
+		glUniform1f(m_UniformLocations.at(name), value);
+		return;
+	}
+
+	int32_t location = glGetUniformLocation(m_Shader, name.c_str());
+	m_UniformLocations[name] = location;
+	glUniform1f(location, value);
+}
+
+void Shader::setUnifrom2f(const std::string& name, float v0, float v1)
+{
+	if (m_UniformLocations.find(name) != m_UniformLocations.end())
+	{
+		glUniform2f(m_UniformLocations.at(name), v0, v1);
+		return;
+	}
+
+	int32_t location = glGetUniformLocation(m_Shader, name.c_str());
+	m_UniformLocations[name] = location;
+	glUniform2f(location, v0, v1);
+}
+
+void Shader::setUnifrom3f(const std::string& name, float v0, float v1, float v2)
+{
+	if (m_UniformLocations.find(name) != m_UniformLocations.end())
+	{
+		glUniform3f(m_UniformLocations.at(name), v0, v1, v2);
+		return;
+	}
+
+	int32_t location = glGetUniformLocation(m_Shader, name.c_str());
+	m_UniformLocations[name] = location;
+	glUniform3f(location, v0, v1, v2);
 }
 
 uint32_t Shader::compileShader(const ShaderType type, const std::string& source)

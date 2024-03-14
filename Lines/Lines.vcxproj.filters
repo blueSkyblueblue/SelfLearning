@@ -352,6 +352,7 @@
       <Filter>vendor\spdlog\include\spdlog</Filter>
     </ClInclude>
     <ClInclude Include="src\Shader.h" />
+    <ClInclude Include="src\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Application.cpp">
@@ -382,8 +383,9 @@
       <Filter>vendor\spdlog\src</Filter>
     </ClCompile>
     <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\shaders\shader.fs" />
+    <Text Include="res\shaders\shader.fs" />
   </ItemGroup>
 </Project>

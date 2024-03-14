@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <unordered_map>
 
 class Shader
 {
@@ -9,6 +10,10 @@ public:
 
 	void bind() const;
 	void unbind() const;
+public:
+	void setUnifrom1f(const std::string& name, float value);
+	void setUnifrom2f(const std::string& name, float v0, float v1);
+	void setUnifrom3f(const std::string& name, float v0, float v1, float v2);
 private:
 	enum class ShaderType : int8_t
 	{
@@ -19,5 +24,7 @@ private:
 	bool linkProgram(const uint32_t vs, const uint32_t fs);
 private:
 	uint32_t m_Shader;
+
+	std::unordered_map<std::string, int32_t> m_UniformLocations;
 };
 
