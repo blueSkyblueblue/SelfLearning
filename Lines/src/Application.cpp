@@ -44,10 +44,10 @@ int main()
 	glBindVertexArray(vao);
 
 	float vertices[] = {
-		-1.0f, -0.0f, 0.0f,
-		 1.0f, -0.0f, 0.0f,
-		 0.0f, -1.0f, 0.0f,
-		 0.0f,  1.0f, 0.0f
+		-0.8f, -0.0f, 0.0f,
+		 0.8f, -0.0f, 0.0f,
+		 0.0f, -0.8f, 0.0f,
+		 0.0f,  0.8f, 0.0f
 	};
 
 	uint32_t vbo = {};
@@ -77,42 +77,39 @@ int main()
 	if (hasError != GL_NO_ERROR) LOG_ERROR("There is an error, and error code : {}", hasError);
 
 	glEnable(GL_LINE_SMOOTH);
-	glLineWidth(2);
+
+	float initialLineWidth;
+	glGetFloatv(GL_LINE_WIDTH, &initialLineWidth);
+	LOG_TRACE("{}", initialLineWidth);
 
 	// Create Shader and Bind it;
 	Shader basicShader("res/shaders/shader.vs", "res/shaders/shader.fs");
 	basicShader.bind();
 
-
 	// Set user optional data, and bind it to current window
 	struct WindowUserInfo
 	{
 		int32_t lineCount;
+		float linespace;
 		std::pair<float, float> drag;
 		std::pair<int32_t, int32_t> windowPos;
 
-		WindowUserInfo() : lineCount { 10 }, windowPos {} {}
+		WindowUserInfo() : lineCount { 10 }, linespace { 0.1f }, windowPos {} {}
 		~WindowUserInfo() = default;
 	};
 
 	WindowUserInfo userInfo = {};
 	glfwSetWindowUserPointer(window->getInstance(), &userInfo);
 
-	// Set a series of callback function (handling events)
+	// Set a series of callback functions (handling events)
 	glfwSetScrollCallback(window->getInstance(), [](GLFWwindow* window, double xoffset, double yoffset)
 		{
-			static WindowUserInfo* userInfo = reinterpret_cast<WindowUserInfo*>(glfwGetWindowUserPointer(window));
-			static int32_t& lineCount = userInfo->lineCount;
+			static float& linespace = reinterpret_cast<WindowUserInfo*>(glfwGetWindowUserPointer(window))->linespace;
+			int width, height;
+			glfwGetFramebufferSize(window, &width, &height);
+			linespace *= ((float)yoffset * 50 + (float)height) / (float)height;
 
-			LOG_INFO("The mouse event => (xoffset: {0}, yoffset: {1})", xoffset, yoffset);
-
-			if (lineCount <= 1 && yoffset > 0)
-			{
-				lineCount = 1;
-				return;
-			}
-
-			lineCount -= (int)std::round(yoffset);
+			LOG_INFO("Mouse Scroll: {0}", yoffset);
 		});
 
 	glfwSetCursorPosCallback(window->getInstance(), [](GLFWwindow* window, double xpos, double ypos)
@@ -122,63 +119,85 @@ int main()
 
 			static bool needReset = true;
 			static float previousX = (float)xpos;
-			static float previousY = (float)xpos;
+			static float previousY = (float)ypos;
+			static std::pair<float, float> dragCache = { 0.0f, 0.0f };
+
 			if (needReset)
 			{
 				previousX = (float)xpos;
-				previousY = (float)xpos;
+				previousY = (float)ypos;
 				needReset = false;
 			}
-
+			
 			int32_t action = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 			if (action == GLFW_PRESS)
 			{
 				int32_t width, height;
 				glfwGetFramebufferSize(window, &width, &height);
 
-				drag.first = (drag.first - previousX) / (float)width;
-				drag.second = (drag.second - previousY) / (float)height;
+				drag.first = dragCache.first + (float)(xpos - previousX) / width;
+				drag.second = dragCache.second - (float)(ypos - previousY) / height;
 
 				LOG_INFO("Mouse Drag: {0}, {1}", drag.first, drag.second);
 			}
 			else if (action == GLFW_RELEASE)
 			{
 				needReset = true;
+				dragCache = { drag.first, drag.second };
+
+				LOG_INFO("Mouse button released...");
 			}
 		});
 
+
+
 	// Main Loop;
+	basicShader.setUnifrom3f("u_Color", 0.8f, 0.7f, 0.8f);
+	float& linespace = userInfo.linespace;
+	auto& [xDragged, yDragged] = userInfo.drag;
 	while (!window->shouldClose())
 	{
-		// processing inputs
-
-		// ==================
-
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		
+		basicShader.setUnifrom2f("u_Dragged", xDragged, yDragged);
+
 		// Draw lines on screen
+		basicShader.setUnifrom2f("u_Transition", 0, 0);
+		basicShader.setUnifrom3f("u_Color", 1.0f, 1.0f, 1.0f);
+		glLineWidth(2.5f);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo[0]);
+		glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, nullptr);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo[1]);
+		glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, nullptr);
+		for (float offset = linespace; offset <= 0.8f; offset += linespace)
 		{
-			for (float i = -1.0f; i <= 1.0f; i += 2.0f / userInfo.lineCount)
+			if ((int)std::round(offset / linespace) % 5 == 0)
 			{
-				if ((int)(i * userInfo.lineCount) % 5 == 0)
-				{
-					basicShader.setUnifrom3f("u_Color", 0.3f, 0.5f, 0.6f);
-				}
-				else basicShader.setUnifrom3f("u_Color", 0.8f, 0.6f, 0.4f);
-
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo[0]);
-				basicShader.setUnifrom2f("u_Transition", 0, i);
-				glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, nullptr);
+				basicShader.setUnifrom3f("u_Color", 0.5f, 0.6f, 0.8f);
+				glLineWidth(1.3f);
+			}
+			else
+			{
+				basicShader.setUnifrom3f("u_Color", 0.6f, 0.6f, 0.6f);
+				glLineWidth(0.8f);
 			}
 
-			for (float i = -1.0f; i <= 1.0f; i += 2.0f / userInfo.lineCount)
-			{
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo[1]);
-				basicShader.setUnifrom2f("u_Transition", i, 0);
-				glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, nullptr);
-			}
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo[0]);
+			
+			basicShader.setUnifrom2f("u_Transition", 0, offset);
+			glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, nullptr);
+			basicShader.setUnifrom2f("u_Transition", 0, -offset);
+			glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, nullptr);
+
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo[1]);
+			
+			basicShader.setUnifrom2f("u_Transition", offset, 0);
+			glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, nullptr);
+			basicShader.setUnifrom2f("u_Transition", -offset, 0);
+			glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, nullptr);
 		}
+
 
 		if (glGetError() != GL_NO_ERROR)
 			LOG_ERROR("There are some errors!");
