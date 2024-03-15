@@ -42,6 +42,12 @@
     <ClInclude Include="src\Logger\Logger.h">
       <Filter>src\Logger</Filter>
     </ClInclude>
+    <ClInclude Include="src\Shader.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Window.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="vendor\spdlog\include\spdlog\async.h">
       <Filter>vendor\spdlog\include\spdlog</Filter>
     </ClInclude>
@@ -351,8 +357,6 @@
     <ClInclude Include="vendor\spdlog\include\spdlog\version.h">
       <Filter>vendor\spdlog\include\spdlog</Filter>
     </ClInclude>
-    <ClInclude Include="src\Shader.h" />
-    <ClInclude Include="src\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Application.cpp">
@@ -360,6 +364,12 @@
     </ClCompile>
     <ClCompile Include="src\Logger\Logger.cpp">
       <Filter>src\Logger</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Window.cpp">
+      <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="vendor\spdlog\src\async.cpp">
       <Filter>vendor\spdlog\src</Filter>
@@ -382,10 +392,5 @@
     <ClCompile Include="vendor\spdlog\src\stdout_sinks.cpp">
       <Filter>vendor\spdlog\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Shader.cpp" />
-    <ClCompile Include="src\Window.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="res\shaders\shader.fs" />
   </ItemGroup>
 </Project>

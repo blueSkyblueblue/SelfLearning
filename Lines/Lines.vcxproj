@@ -137,8 +137,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\Logger\Logger.h" />
+    <ClInclude Include="src\Shader.h" />
+    <ClInclude Include="src\Window.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\async.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\async_logger-inl.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\async_logger.h" />
@@ -242,12 +243,12 @@
     <ClInclude Include="vendor\spdlog\include\spdlog\stopwatch.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\tweakme.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\version.h" />
-    <ClInclude Include="src\Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Logger\Logger.cpp" />
+    <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\Window.cpp" />
     <ClCompile Include="vendor\spdlog\src\async.cpp" />
     <ClCompile Include="vendor\spdlog\src\bundled_fmtlib_format.cpp" />
     <ClCompile Include="vendor\spdlog\src\cfg.cpp" />
@@ -255,7 +256,6 @@
     <ClCompile Include="vendor\spdlog\src\file_sinks.cpp" />
     <ClCompile Include="vendor\spdlog\src\spdlog.cpp" />
     <ClCompile Include="vendor\spdlog\src\stdout_sinks.cpp" />
-    <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Dependencies\GLFW\GLFW.vcxproj">
@@ -264,12 +264,6 @@
     <ProjectReference Include="..\Dependencies\Glad\Glad.vcxproj">
       <Project>{BDD6857C-A90D-870D-52FA-6C103E10030F}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="res\shaders\shader.fs">
-      <FileType>Document</FileType>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </Text>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
