@@ -30,6 +30,8 @@ Window::Window(int32_t width, int32_t height, const std::string& title)
 
 	this->setup();
 	this->makeContexCurrent(); // Make opengl context current, waiting for drawing
+
+	glfwSetWindowUserPointer(m_Window, this);
 }
 
 Window::~Window()

@@ -42,15 +42,19 @@ project "Lines"
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
-		"%{prj.name}/vendor/**.h",
-		"%{prj.name}/vendor/**.cpp"
+		"%{prj.name}/vendor/spdlog/**.h",
+		"%{prj.name}/vendor/spdlog/**.cpp",
+		"%{prj.name}/vendor/glm/**.h",
+		"%{prj.name}/vendor/glm/**.hpp",
+		"%{prj.name}/vendor/glm/**.inl"
 	}
 
 	includedirs
 	{
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
-		"%{prj.name}/vendor/spdlog/include"
+		"%{prj.name}/vendor/spdlog/include",
+		"%{prj.name}/vendor/glm"
 	}
 
 	links 

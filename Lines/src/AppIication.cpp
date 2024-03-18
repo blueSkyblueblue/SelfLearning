@@ -1,41 +1,27 @@
-#include <GLFW/glfw3.h>
 #include <glad/glad.h>
+//#include <glm/gtx/transform.hpp>
 
 #include "Window.h"
 #include "Shader.h"
-
-#include <iostream>
 
 #include "Logger/Logger.h"
 
 constexpr int32_t INITIAL_WIDTH = 800;
 constexpr int32_t INITIAL_HEIGHT = 600;
 
-static void glfw_error_callback(int errorCode, const char* description)
-{
-	LOG_ERROR("ERROR CODE: {0}", errorCode);
-	LOG_TRACE("DESCRIPTION\n\t {0}", description);
-}
+#define APP_ASSERT(expression, ...) if (!(expression)) { LOG_ERROR(__VA_ARGS__); __debugbreak(); }
+
+static void glfw_error_callback(int errorCode, const char* description);
 
 int main()
 {
 	Log::Init();
 	glfwSetErrorCallback(glfw_error_callback);
-
-	if (!glfwInit())
-	{
-		std::cout << "Failed to initialize GLFW!" << std::endl;
-		return -1;
-	}
+	APP_ASSERT(glfwInit(), "Failed to initialize GLFW!");
 
 	Window* window = new Window(INITIAL_WIDTH, INITIAL_HEIGHT, "Draw Lines");
-
 	window->makeContexCurrent();
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-	{
-		std::cout << "Failed to initialize Glad" << std::endl;
-		return -1;
-	}
+	APP_ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), "Failed to initialize Glad");
 
 	LOG_INFO("The Current Version of OpenGL : {0}", (char*)glGetString(GL_VERSION));
 
@@ -72,9 +58,6 @@ int main()
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo[1]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * 2, &indices[0] + 2, GL_STATIC_DRAW);
-
-	uint32_t hasError = glGetError();
-	if (hasError != GL_NO_ERROR) LOG_ERROR("There is an error, and error code : {}", hasError);
 
 	glEnable(GL_LINE_SMOOTH);
 
@@ -208,9 +191,14 @@ int main()
 
 	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(2, ibo);
-	
 	glDeleteVertexArrays(1, &vao);
 
 	delete window;
 	glfwTerminate();
+}
+
+static void glfw_error_callback(int errorCode, const char* description)
+{
+	LOG_ERROR("ERROR CODE: {0}", errorCode);
+	LOG_TRACE("DESCRIPTION\n\t {0}", description);
 }
