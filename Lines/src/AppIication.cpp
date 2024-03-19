@@ -1,9 +1,5 @@
 #include <glad/glad.h>
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
-#include "Window.h"
-#include "Shader.h"
 
 #include "Application.h"
 
@@ -20,11 +16,10 @@ static void glfw_error_callback(int errorCode, const char* description);
 Application* Application::s_App = new Application();
 
 Application::Application()
-	: m_Running{ false }, 
-	m_CameraPosX {0.0f},
-	m_CameraPosY {0.0f},
-	m_CameraPosZ {0.0f},
+	: m_Running{ false },
+	m_Camera {glm::identity<glm::mat4>()},
 	m_Rotate {glm::identity<glm::mat4>()},
+	m_Pers{ glm::perspective(glm::radians(75.f), (float)INITIAL_WIDTH / INITIAL_HEIGHT, 0.1f, 1000.f)},
 	m_MVP {glm::identity<glm::mat4>()},
 	cursor {nullptr}
 {
@@ -53,7 +48,7 @@ void Application::setup()
 	glfwSetCursor(m_Window->getInstance(), cursor);
 
 	glfwSetKeyCallback(m_Window->getInstance(), OnKeyPressed);
-	glfwSetMouseButtonCallback(m_Window->getInstance(), OnMouseMove);
+	glfwSetMouseButtonCallback(m_Window->getInstance(), OnMouseButton);
 	glfwSetCursorPosCallback(m_Window->getInstance(), OnCursorPos);
 	glfwSetFramebufferSizeCallback(m_Window->getInstance(), OnFramebufferResize);
 
@@ -63,6 +58,7 @@ void Application::setup()
 	int32_t width, height;
 	glfwGetFramebufferSize(m_Window->getInstance(), &width, &height);
 	m_Pers = glm::perspective(glm::radians(75.0f), (float)width / height, 0.1f, 1000.0f);
+	m_Camera = glm::translate(m_Camera, glm::vec3(0.f, 0.f, -10.f));
 }
 
 void Application::run()
@@ -104,27 +100,35 @@ void Application::run()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
 
-	//uint32_t floor, floorBuffer, floorElems;
-	//glGenVertexArrays(1, &floor);
-	//glGenBuffers(1, &floorBuffer);
-	//glGenBuffers(1, &floorElems);
+	uint32_t floor, floorBuffer, floorElems;
+	glGenVertexArrays(1, &floor);
+	glGenBuffers(1, &floorBuffer);
+	glGenBuffers(1, &floorElems);
 
-	//glBindVertexArray(floor);
-	//float floorVertices[] = {
-	//	-1.0f, -1.0f, 0.0f,		 1.0f, 1.0f, 1.0f,
-	//	 1.0f, -1.0f, 0.0f,		 1.0f, 1.0f, 1.0f
-	//};
+	float floorVertices[] = {
+		-1.0f, -5.0f, 0.0f,		 1.0f, 1.0f, 1.0f,
+		 1.0f, -5.0f, 0.0f,		 1.0f, 1.0f, 1.0f
+	};
 
-	//uint32_t floorIndices[] = {
-	//	1, 2
-	//};
+	uint32_t floorIndices[] = {
+		0, 1
+	};
 
-	/*glBindBuffer(GL_ARRAY_BUFFER, floorBuffer);
+	glBindVertexArray(floor);
+	glBindBuffer(GL_ARRAY_BUFFER, floorBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(floorVertices), floorVertices, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorElems);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(floorIndices), floorIndices, GL_STATIC_DRAW);
-	*/
+	
+	APP_ASSERT(glGetError() == GL_NO_ERROR, "There are some errors: {}", glGetError());
+
+	glm::mat4 model = glm::identity<glm::mat4>();
 
 	m_Running = true;
 	while (m_Running)
@@ -135,16 +139,26 @@ void Application::run()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		float time = (float)glfwGetTime();
-		m_Camera = glm::translate(glm::mat4(1.0f), glm::vec3(m_CameraPosX, m_CameraPosY, -20.0f + m_CameraPosZ));
-		glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), time, glm::vec3(0.0f, 1.0f, 1.0f));
-		m_MVP = m_Pers * m_Rotate * m_Camera * rotate;
+		m_MVP = m_Pers * m_Rotate * m_Camera;
 
 		m_Shader->setUniformMat4("u_MVP", m_MVP);
+
 		glBindVertexArray(vao);
+		glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), time, glm::vec3(0.0f, 1.0f, 1.0f));
+		m_Shader->setUniformMat4("u_Model", rotate);
 		glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, nullptr);
 
-		//glBindVertexArray(floor);
-		//glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, nullptr);
+		glBindVertexArray(floor);
+		m_Shader->setUniformMat4("u_Model", model);
+		glEnable(GL_LINE_SMOOTH);
+		glLineWidth(2.f);
+		for (int i = -10; i != 20; i++)
+		{
+			model = glm::translate(glm::mat4(1.0f), glm::vec3(0.f, 0.f,(float)i));
+			model = glm::scale(model, glm::vec3(10.f, 1.0f, 1.0f));
+			m_Shader->setUniformMat4("u_Model", model);
+			glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, nullptr);
+		}
 
 		APP_ASSERT(glGetError() == GL_NO_ERROR, "There are some errors!");
 
@@ -176,38 +190,57 @@ static void glfw_error_callback(int errorCode, const char* description)
 
 void Application::OnKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+	static bool isFullScreen = false;
 	Application* app = ((Application*)glfwGetWindowUserPointer(window))->GetApp();
 
 	if (action != GLFW_PRESS && action != GLFW_REPEAT) return;
-
 	switch (key)
 	{
+
 		case GLFW_KEY_ESCAPE:
 		{
 			app->m_Running = false;
 			break;
 		}
+		case GLFW_KEY_F:
+		{
+			if (isFullScreen)
+			{
+				glfwSetWindowMonitor(window, nullptr, 300, 200, INITIAL_WIDTH, INITIAL_HEIGHT, 0);
+			}
+			else
+			{
+				GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+				const GLFWvidmode* vidmode = glfwGetVideoMode(monitor);
+				glfwSetWindowMonitor(window, monitor, 0, 0, vidmode->width, vidmode->height, vidmode->refreshRate);
+			}
+
+			isFullScreen = !isFullScreen;
+			break;
+		}
 	}
 }
 
-void Application::OnMouseMove(GLFWwindow* window, int button, int action, int mods)
+void Application::OnMouseButton(GLFWwindow* window, int button, int action, int mods)
 {
+	LOG_INFO("Button Event: [button:{0}, action:{1}, mods:{2}]", button, action, mods);
+
 	switch (button)
 	{
-	case GLFW_PRESS:
-	{
+		case GLFW_PRESS:
+		{
 
-	}
-	case GLFW_RELEASE:
-	{
+		}
+		case GLFW_RELEASE:
+		{
 
-	}
+		}
 	}
 }
 
 void Application::OnCursorPos(GLFWwindow* window, double xPos, double yPos)
 {
-	static float sencitiveness = 0.0008f;
+	static float sencitiveness = 0.001f;
 
 	Application* app = (Application*)glfwGetWindowUserPointer(window);
 	int width, height;
@@ -215,14 +248,14 @@ void Application::OnCursorPos(GLFWwindow* window, double xPos, double yPos)
 	float xOffset = (float)xPos - (float)width / 2;
 	float yOffset = (float)yPos - (float)height / 2;
 
-	spdlog::default_logger()->info("----- Cursor Position: [{0}, {1}] -------", xPos, yPos);
+	LOG_INFO("----- Cursor Position: [{0}, {1}] -------", xPos, yPos);
 
 	if (xOffset || yOffset)
 	{
 		LOG_WARN("The Cursor Position Offsets: ({0}, {1})", xOffset, yOffset);
 
-		app->m_Rotate *= glm::rotate(glm::mat4(1.f), yOffset * sencitiveness, {1.f, 0.f, 0.f}) *
-			glm::rotate(glm::mat4(1.f), xOffset * sencitiveness, {0.f, 1.f, 0.f});
+		app->m_Rotate = glm::rotate(glm::mat4(1.f), yOffset * sencitiveness, {1.f, 0.f, 0.f}) *
+			glm::rotate(glm::mat4(1.0f), xOffset * sencitiveness, {0.f, 1.f, 0.f}) * app->m_Rotate;
 
 		glfwSetCursorPos(window, (double)width / 2, (double)height / 2);
 	}
@@ -242,7 +275,7 @@ void Application::processInput()
 		GLFW_KEY_W, GLFW_KEY_X,
 		GLFW_KEY_J, GLFW_KEY_K
 	};
-
+	
 	static constexpr float transitionSpeed = 0.005f;
 
 	for (int key : keys)
@@ -254,37 +287,38 @@ void Application::processInput()
 			case GLFW_KEY_A:
 			{
 				LOG_INFO("KEY_A is Pressed");
-				m_CameraPosX -= transitionSpeed;
+				//glm::vec4 direction = 
+				m_Camera = glm::translate(glm::mat4(1.f), glm::vec3(transitionSpeed, 0.f, 0.f)) * m_Camera;
 				break;
 			}
 			case GLFW_KEY_D:
 			{
 				LOG_INFO("KEY_D is Pressed");
-				m_CameraPosX += transitionSpeed;
+				m_Camera *= glm::translate(glm::mat4(1.f), glm::vec3(-transitionSpeed, 0.f, 0.f));
 				break;
 			}
 			case GLFW_KEY_W:
 			{
 				LOG_INFO("KEY_W is Pressed");
-				m_CameraPosY += transitionSpeed;
+				m_Camera *= glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, transitionSpeed));
 				break;
 			}
 			case GLFW_KEY_X:
 			{
 				LOG_INFO("KEY_X is Pressed");
-				m_CameraPosY -= transitionSpeed;
+				m_Camera *= glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -transitionSpeed));
 				break;
 			}
 			case GLFW_KEY_J:
 			{
 				LOG_INFO("KEY_J is Pressed");
-				m_CameraPosZ += transitionSpeed;
+				m_Camera *= glm::translate(glm::mat4(1.f), glm::vec3(0.f, transitionSpeed, 0.f));
 				break;
 			}
 			case GLFW_KEY_K:
 			{
 				LOG_INFO("KEY_K is Pressed");
-				m_CameraPosZ -= transitionSpeed;
+				m_Camera *= glm::translate(glm::mat4(1.f), glm::vec3(0.f, -transitionSpeed, 0.f));
 				break;
 			}
 		}
