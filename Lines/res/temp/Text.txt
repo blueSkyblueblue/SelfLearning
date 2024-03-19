@@ -1,0 +1,111 @@
+
+	//// Set user optional data, and bind it to current window
+	//struct WindowUserInfo
+	//{
+	//	int32_t lineCount;
+	//	float linespace;
+	//	std::pair<float, float> drag;
+	//	std::pair<int32_t, int32_t> windowPos;
+
+	//	WindowUserInfo() : lineCount { 10 }, linespace { 0.1f }, windowPos {} {}
+	//	~WindowUserInfo() = default;
+	//};
+
+	//WindowUserInfo userInfo = {};
+	//glfwSetWindowUserPointer(window->getInstance(), &userInfo);
+
+	//// Set a series of callback functions (handling events)
+	//glfwSetScrollCallback(window->getInstance(), [](GLFWwindow* window, double xoffset, double yoffset)
+	//	{
+	//		static float& linespace = reinterpret_cast<WindowUserInfo*>(glfwGetWindowUserPointer(window))->linespace;
+	//		int width, height;
+	//		glfwGetFramebufferSize(window, &width, &height);
+	//		linespace *= ((float)yoffset * 50 + (float)height) / (float)height;
+
+	//		LOG_INFO("Mouse Scroll: {0}", yoffset);
+	//	});
+
+	//glfwSetCursorPosCallback(window->getInstance(), [](GLFWwindow* window, double xpos, double ypos)
+	//	{
+	//		static WindowUserInfo* userInfo = reinterpret_cast<WindowUserInfo*>(glfwGetWindowUserPointer(window));
+	//		static std::pair<float, float>& drag = userInfo->drag;
+
+	//		static bool needReset = true;
+	//		static float previousX = (float)xpos;
+	//		static float previousY = (float)ypos;
+	//		static std::pair<float, float> dragCache = { 0.0f, 0.0f };
+
+	//		if (needReset)
+	//		{
+	//			previousX = (float)xpos;
+	//			previousY = (float)ypos;
+	//			needReset = false;
+	//		}
+	//		
+	//		int32_t action = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+	//		if (action == GLFW_PRESS)
+	//		{
+	//			int32_t width, height;
+	//			glfwGetFramebufferSize(window, &width, &height);
+
+	//			drag.first = dragCache.first + (float)(xpos - previousX) / width;
+	//			drag.second = dragCache.second - (float)(ypos - previousY) / height;
+
+	//			LOG_INFO("Mouse Drag: {0}, {1}", drag.first, drag.second);
+	//		}
+	//		else if (action == GLFW_RELEASE)
+	//		{
+	//			needReset = true;
+	//			dragCache = { drag.first, drag.second };
+
+	//			LOG_INFO("Mouse button released...");
+	//		}
+	//	});
+
+	//glEnable(GL_LINE_SMOOTH);
+
+
+
+
+
+
+
+	
+
+		//basicShader.setUniform2f("u_Dragged", xDragged, yDragged);
+
+		//// Draw lines on screen
+		//basicShader.setUniform2f("u_Transition", 0, 0);
+		//basicShader.setUniform3f("u_Color", 1.0f, 1.0f, 1.0f);
+		//glLineWidth(2.5f);
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo[0]);
+		//glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, nullptr);
+		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo[1]);
+		//glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, nullptr);
+		//for (float offset = linespace; offset <= 0.8f; offset += linespace)
+		//{
+		//	if ((int)std::round(offset / linespace) % 5 == 0)
+		//	{
+		//		basicShader.setUniform3f("u_Color", 0.5f, 0.6f, 0.8f);
+		//		glLineWidth(1.3f);
+		//	}
+		//	else
+		//	{
+		//		basicShader.setUniform3f("u_Color", 0.6f, 0.6f, 0.6f);
+		//		glLineWidth(0.8f);
+		//	}
+
+		//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo[0]);
+		//	
+		//	basicShader.setUniform2f("u_Transition", 0, offset);
+		//	glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, nullptr);
+		//	basicShader.setUniform2f("u_Transition", 0, -offset);
+		//	glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, nullptr);
+
+		//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo[1]);
+		//	
+		//	basicShader.setUniform2f("u_Transition", offset, 0);
+		//	glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, nullptr);
+		//	basicShader.setUniform2f("u_Transition", -offset, 0);
+		//	glDrawElements(GL_LINES, 2, GL_UNSIGNED_INT, nullptr);
+		//}

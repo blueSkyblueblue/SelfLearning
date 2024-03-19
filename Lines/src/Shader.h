@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <unordered_map>
+#include <glm/glm.hpp>
 
 class Shader
 {
@@ -11,9 +12,15 @@ public:
 	void bind() const;
 	void unbind() const;
 public:
-	void setUnifrom1f(const std::string& name, float value);
-	void setUnifrom2f(const std::string& name, float v0, float v1);
-	void setUnifrom3f(const std::string& name, float v0, float v1, float v2);
+	//Shader(Shader&& shader) 
+	//	: m_Shader{ shader.m_Shader }, m_UniformLocations{ std::move(shader.m_UniformLocations) }
+	//{
+	//}
+public:
+	void setUniform1f(const std::string& name, float value);
+	void setUniform2f(const std::string& name, float v0, float v1);
+	void setUniform3f(const std::string& name, float v0, float v1, float v2);
+	void setUniformMat4(const std::string& name, glm::mat4 mat);
 private:
 	enum class ShaderType : int8_t
 	{

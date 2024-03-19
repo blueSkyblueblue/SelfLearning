@@ -61,14 +61,4 @@ bool Window::shouldClose() const
 
 void Window::setup()
 {
-	glfwSetFramebufferSizeCallback(m_Window, [](GLFWwindow* window, int32_t width, int32_t height)
-		{
-			glViewport(0, 0, width, height);
-		});
-
-	glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int32_t key, int32_t scancode, int32_t action, int32_t mods)
-		{
-			if (action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
-				glfwSetWindowShouldClose(window, GLFW_TRUE);
-		});
 }

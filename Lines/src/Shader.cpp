@@ -62,22 +62,24 @@ void Shader::unbind() const
 	glUseProgram(0);
 }
 
-void Shader::setUnifrom1f(const std::string& name, float value)
+void Shader::setUniformMat4(const std::string& name, glm::mat4 mat)
 {
-	int32_t location = getUniformLocation(name);
-	glUniform1f(location, value);
+	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 }
 
-void Shader::setUnifrom2f(const std::string& name, float v0, float v1)
+void Shader::setUniform1f(const std::string& name, float value)
 {
-	int32_t location = getUniformLocation(name);
-	glUniform2f(location, v0, v1);
+	glUniform1f(getUniformLocation(name), value);
 }
 
-void Shader::setUnifrom3f(const std::string& name, float v0, float v1, float v2)
+void Shader::setUniform2f(const std::string& name, float v0, float v1)
 {
-	int32_t location = getUniformLocation(name);
-	glUniform3f(location, v0, v1, v2);
+	glUniform2f(getUniformLocation(name), v0, v1);
+}
+
+void Shader::setUniform3f(const std::string& name, float v0, float v1, float v2)
+{
+	glUniform3f(getUniformLocation(name), v0, v1, v2);
 }
 
 uint32_t Shader::compileShader(const ShaderType type, const std::string& source)
@@ -147,6 +149,8 @@ bool Shader::hasError(uint32_t status, uint32_t id, bool isProgram)
 			glDeleteProgram(id);
 			return true;
 		}
+
+		return false;
 	}
 
 	glGetShaderiv(id, GL_COMPILE_STATUS, &result);

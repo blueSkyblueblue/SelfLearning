@@ -1656,9 +1656,11 @@
     <ClInclude Include="vendor\spdlog\include\spdlog\version.h">
       <Filter>vendor\spdlog\include\spdlog</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="src\Application.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\AppInstance.cpp">
+    <ClCompile Include="src\AppIication.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\Logger\Logger.cpp">
@@ -1691,5 +1693,11 @@
     <ClCompile Include="vendor\spdlog\src\stdout_sinks.cpp">
       <Filter>vendor\spdlog\src</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Lines.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="res\temp\Text.txt" />
   </ItemGroup>
 </Project>
