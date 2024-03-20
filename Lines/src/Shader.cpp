@@ -1,5 +1,6 @@
 #include "Shader.h"
 #include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
 #include <fstream>
 
 #include "Logger/Logger.h"
@@ -64,7 +65,7 @@ void Shader::unbind() const
 
 void Shader::setUniformMat4(const std::string& name, glm::mat4 mat)
 {
-	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
+	glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(mat));
 }
 
 void Shader::setUniform1f(const std::string& name, float value)

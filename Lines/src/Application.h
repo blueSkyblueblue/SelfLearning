@@ -28,6 +28,8 @@ public:
 	static void OnFramebufferResize(GLFWwindow* window, int width,  int height);
 
 	void processInput();
+	void processKey();
+	void processCursor();
 private:
 	Window* m_Window;
 	Shader* m_Shader;
@@ -36,6 +38,7 @@ private:
 private:
 	glm::mat4 m_Camera;
 	glm::mat4 m_Rotate;
+	glm::mat4 m_Direction;
 					
 	glm::mat4 m_Pers;
 	glm::mat4 m_MVP;

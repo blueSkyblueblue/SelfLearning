@@ -46,7 +46,14 @@ project "Lines"
 		"%{prj.name}/vendor/spdlog/**.cpp",
 		"%{prj.name}/vendor/glm/**.h",
 		"%{prj.name}/vendor/glm/**.hpp",
-		"%{prj.name}/vendor/glm/**.inl"
+		"%{prj.name}/vendor/glm/**.inl",
+		"%{prj.name}/vendor/imgui/**.h",
+		"%{prj.name}/vendor/imgui/**.cpp",
+	}
+
+	removefiles
+	{
+		"%{prj.name}/vendor/imgui/imgui/main.cpp",
 	}
 
 	includedirs
@@ -54,7 +61,8 @@ project "Lines"
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
 		"%{prj.name}/vendor/spdlog/include",
-		"%{prj.name}/vendor/glm"
+		"%{prj.name}/vendor/glm",
+		"%{prj.name}/vendor/imgui"
 	}
 
 	links 

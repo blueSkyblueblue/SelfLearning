@@ -31,6 +31,12 @@
     <Filter Include="vendor\glm\glm\simd">
       <UniqueIdentifier>{CDE1A2E0-3943-80EE-C2B0-C6A02E11B7AD}</UniqueIdentifier>
     </Filter>
+    <Filter Include="vendor\imgui">
+      <UniqueIdentifier>{5D3BD0F0-499E-5F95-F223-984BDE652B18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\imgui\imgui">
+      <UniqueIdentifier>{879A0465-737E-C5BA-DCDE-BF0DC8E1AF3C}</UniqueIdentifier>
+    </Filter>
     <Filter Include="vendor\spdlog">
       <UniqueIdentifier>{8BBC5F22-F77C-DB58-C0B7-24D62C372035}</UniqueIdentifier>
     </Filter>
@@ -60,6 +66,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Application.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="src\Logger\Logger.h">
       <Filter>src\Logger</Filter>
     </ClInclude>
@@ -1347,6 +1356,33 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui\imconfig.h">
+      <Filter>vendor\imgui\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui\imgui.h">
+      <Filter>vendor\imgui\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui\imgui_impl_glfw.h">
+      <Filter>vendor\imgui\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui\imgui_impl_opengl3.h">
+      <Filter>vendor\imgui\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui\imgui_impl_opengl3_loader.h">
+      <Filter>vendor\imgui\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui\imgui_internal.h">
+      <Filter>vendor\imgui\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui\imstb_rectpack.h">
+      <Filter>vendor\imgui\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui\imstb_textedit.h">
+      <Filter>vendor\imgui\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\imgui\imgui\imstb_truetype.h">
+      <Filter>vendor\imgui\imgui</Filter>
+    </ClInclude>
     <ClInclude Include="vendor\spdlog\include\spdlog\async.h">
       <Filter>vendor\spdlog\include\spdlog</Filter>
     </ClInclude>
@@ -1656,8 +1692,6 @@
     <ClInclude Include="vendor\spdlog\include\spdlog\version.h">
       <Filter>vendor\spdlog\include\spdlog</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="src\Application.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\AppIication.cpp">
@@ -1671,6 +1705,27 @@
     </ClCompile>
     <ClCompile Include="src\Window.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui\imgui.cpp">
+      <Filter>vendor\imgui\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui\imgui_demo.cpp">
+      <Filter>vendor\imgui\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui\imgui_draw.cpp">
+      <Filter>vendor\imgui\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui\imgui_impl_glfw.cpp">
+      <Filter>vendor\imgui\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui\imgui_impl_opengl3.cpp">
+      <Filter>vendor\imgui\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui\imgui_tables.cpp">
+      <Filter>vendor\imgui\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\imgui\imgui\imgui_widgets.cpp">
+      <Filter>vendor\imgui\imgui</Filter>
     </ClCompile>
     <ClCompile Include="vendor\spdlog\src\async.cpp">
       <Filter>vendor\spdlog\src</Filter>
@@ -1693,11 +1748,5 @@
     <ClCompile Include="vendor\spdlog\src\stdout_sinks.cpp">
       <Filter>vendor\spdlog\src</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Lines.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="res\temp\Text.txt" />
   </ItemGroup>
 </Project>

@@ -79,7 +79,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Dependencies\GLFW\include;..\Dependencies\Glad\include;vendor\spdlog\include;vendor\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Dependencies\GLFW\include;..\Dependencies\Glad\include;vendor\spdlog\include;vendor\glm;vendor\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -97,7 +97,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Dependencies\GLFW\include;..\Dependencies\Glad\include;vendor\spdlog\include;vendor\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Dependencies\GLFW\include;..\Dependencies\Glad\include;vendor\spdlog\include;vendor\glm;vendor\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -119,7 +119,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;SPDLOG_COMPILED_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Dependencies\GLFW\include;..\Dependencies\Glad\include;vendor\spdlog\include;vendor\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Dependencies\GLFW\include;..\Dependencies\Glad\include;vendor\spdlog\include;vendor\glm;vendor\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -137,7 +137,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="resource.h" />
     <ClInclude Include="src\Application.h" />
     <ClInclude Include="src\Logger\Logger.h" />
     <ClInclude Include="src\Shader.h" />
@@ -568,6 +567,15 @@
     <ClInclude Include="vendor\glm\glm\vec3.hpp" />
     <ClInclude Include="vendor\glm\glm\vec4.hpp" />
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp" />
+    <ClInclude Include="vendor\imgui\imgui\imconfig.h" />
+    <ClInclude Include="vendor\imgui\imgui\imgui.h" />
+    <ClInclude Include="vendor\imgui\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="vendor\imgui\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="vendor\imgui\imgui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="vendor\imgui\imgui\imgui_internal.h" />
+    <ClInclude Include="vendor\imgui\imgui\imstb_rectpack.h" />
+    <ClInclude Include="vendor\imgui\imgui\imstb_textedit.h" />
+    <ClInclude Include="vendor\imgui\imgui\imstb_truetype.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\async.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\async_logger-inl.h" />
     <ClInclude Include="vendor\spdlog\include\spdlog\async_logger.h" />
@@ -677,6 +685,13 @@
     <ClCompile Include="src\Logger\Logger.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\Window.cpp" />
+    <ClCompile Include="vendor\imgui\imgui\imgui.cpp" />
+    <ClCompile Include="vendor\imgui\imgui\imgui_demo.cpp" />
+    <ClCompile Include="vendor\imgui\imgui\imgui_draw.cpp" />
+    <ClCompile Include="vendor\imgui\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="vendor\imgui\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="vendor\imgui\imgui\imgui_tables.cpp" />
+    <ClCompile Include="vendor\imgui\imgui\imgui_widgets.cpp" />
     <ClCompile Include="vendor\spdlog\src\async.cpp" />
     <ClCompile Include="vendor\spdlog\src\bundled_fmtlib_format.cpp" />
     <ClCompile Include="vendor\spdlog\src\cfg.cpp" />
@@ -692,12 +707,6 @@
     <ProjectReference Include="..\Dependencies\Glad\Glad.vcxproj">
       <Project>{BDD6857C-A90D-870D-52FA-6C103E10030F}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Lines.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="res\temp\Text.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
