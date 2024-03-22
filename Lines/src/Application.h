@@ -35,19 +35,18 @@ public:
 private:
 	Window* m_Window;
 	Shader* m_Shader;
-
-	GLFWcursor* cursor;
 private:
 	uint32_t m_Box, m_BoxBuffer, m_BoxIndicesBuffer;
 	uint32_t m_Floor, m_FloorBuffer, m_FloorIndicesBuffer;
 
 	glm::mat4 m_Camera;
 	glm::mat4 m_Rotate;
-	glm::mat4 m_Direction;
+	glm::mat4 m_HorizontalDirection;
+	glm::mat4 m_VerticalDirection;
 
 	float m_VerticalRadian;
 	float m_HorizontalRadian;
-					
+
 	glm::mat4 m_Pers;
 	glm::mat4 m_MVP;
 private:

@@ -22,12 +22,12 @@ Application::Application()
 	: m_Running{ false },
 	m_Camera {glm::identity<glm::mat4>()},
 	m_Rotate {glm::identity<glm::mat4>()},
-	m_Direction {glm::identity<glm::mat4>()},
+	m_HorizontalDirection { glm::identity<glm::mat4>() },
+	m_VerticalDirection {glm::identity<glm::mat4>()},
 	m_Pers { glm::perspective(glm::radians(75.f), (float)INITIAL_WIDTH / INITIAL_HEIGHT, 0.1f, 1000.f)},
 	m_MVP {glm::identity<glm::mat4>()},
 	m_VerticalRadian {0.f},
-	m_HorizontalRadian {0.f},
-	cursor {nullptr}
+	m_HorizontalRadian {0.f}
 {
 	m_Window = new Window(INITIAL_WIDTH, INITIAL_HEIGHT, "Draw Lines");
 	m_Window->makeContexCurrent();
@@ -38,8 +38,6 @@ Application::Application()
 
 Application::~Application()
 {
-	glfwDestroyCursor(cursor);
-
 	glDeleteBuffers(1, &m_Box);
 	glDeleteBuffers(1, &m_BoxBuffer);
 	glDeleteBuffers(1, &m_BoxIndicesBuffer);
@@ -57,9 +55,6 @@ Application::~Application()
 void Application::setup()
 {
 	glfwSetWindowUserPointer(m_Window->getInstance(), this);
-
-	cursor = glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR);
-	glfwSetCursor(m_Window->getInstance(), cursor);
 
 	glfwSetWindowCloseCallback(m_Window->getInstance(), OnWindowClose);
 	glfwSetKeyCallback(m_Window->getInstance(), OnKeyPressed);
@@ -210,8 +205,8 @@ void Application::run()
 		}
 
 
-		m_Rotate = glm::rotate(glm::mat4(1.f), glm::radians(m_VerticalRadian), glm::vec3(1.f, 0.f, 0.f))
-			* glm::rotate(glm::mat4(1.f), glm::radians(m_HorizontalRadian), glm::vec3(0.f, 1.f, 0.f));
+		m_Rotate = glm::rotate(glm::mat4(1.f), m_VerticalRadian, glm::vec3(1.f, 0.f, 0.f))
+			* glm::rotate(glm::mat4(1.f), m_HorizontalRadian, glm::vec3(0.f, 1.f, 0.f));
 		m_MVP = m_Pers * m_Rotate * m_Camera;
 		m_Shader->setUniformMat4("u_MVP", m_MVP);
 
@@ -347,7 +342,7 @@ void Application::OnMouseButton(GLFWwindow* window, int button, int action, int 
 
 void Application::OnCursorPos(GLFWwindow* window, double xPos, double yPos)
 {
-	static float sencitiveness = 0.05f;
+	static float sencitiveness = 0.001f;
 	static float recordPosX = 0.f;
 	static float recordPosY = 0.f;
 	static Application* app = (Application*)glfwGetWindowUserPointer(window);
@@ -363,6 +358,9 @@ void Application::OnCursorPos(GLFWwindow* window, double xPos, double yPos)
 
 			app->m_HorizontalRadian -= xOffset * sencitiveness;
 			app->m_VerticalRadian -= yOffset * sencitiveness;
+
+			app->m_HorizontalDirection = glm::rotate(glm::mat4(1.f), -app->m_HorizontalRadian, glm::vec3(0.f, 1.f, 0.f));
+			app->m_VerticalDirection = glm::rotate(glm::mat4(1.f), -app->m_VerticalRadian, glm::vec3(1.f, 0.f, 0.f));
 
 			break;
 		}
@@ -398,7 +396,7 @@ void Application::processKey()
 	GLFW_KEY_J, GLFW_KEY_K
 	};
 
-	static constexpr float transitionSpeed = 0.07f;
+	static constexpr float moveSpeed = 0.1f;
 	static glm::vec3 direction;
 
 	for (int key : keys)
@@ -410,42 +408,42 @@ void Application::processKey()
 		case GLFW_KEY_A:
 		{
 			LOG_INFO("KEY_A is Pressed");
-			direction =/*/* glm::mat3(m_Direction) * */glm::vec3(transitionSpeed, 0.f, 0.f);
+			direction = m_HorizontalDirection * glm::vec4(moveSpeed, 0.f, 0.f, 1.0f);
 			m_Camera = glm::translate(m_Camera, direction);
 			break;
 		}
 		case GLFW_KEY_D:
 		{
 			LOG_INFO("KEY_D is Pressed");
-			direction =/*/* glm::mat3(m_Direction) * */glm::vec3(-transitionSpeed, 0.f, 0.f);
+			direction = m_HorizontalDirection * glm::vec4(-moveSpeed, 0.f, 0.f, 1.0f);
 			m_Camera = glm::translate(m_Camera, direction);
 			break;
 		}
 		case GLFW_KEY_W:
 		{
 			LOG_INFO("KEY_W is Pressed");
-			direction =/*/* glm::mat3(m_Direction) * */glm::vec3(0.f, 0.f, transitionSpeed);
+			direction = m_HorizontalDirection * glm::vec4(0.f, 0.f, moveSpeed, 1.0f);
 			m_Camera = glm::translate(m_Camera, direction);
 			break;
 		}
 		case GLFW_KEY_X:
 		{
 			LOG_INFO("KEY_X is Pressed");
-			direction =/*/* glm::mat3(m_Direction) * */glm::vec3(0.f, 0.f, -transitionSpeed);
+			direction = m_HorizontalDirection * glm::vec4(0.f, 0.f, -moveSpeed, 1.0f);
 			m_Camera = glm::translate(m_Camera, direction);
 			break;
 		}
 		case GLFW_KEY_J:
 		{
 			LOG_INFO("KEY_J is Pressed");
-			direction =/* glm::mat3(m_Direction) * */glm::vec3(0.f, transitionSpeed, 0.f);
+			direction = glm::vec3(0.f, moveSpeed, 0.f);
 			m_Camera = glm::translate(m_Camera, direction);
 			break;
 		}
 		case GLFW_KEY_K:
 		{
 			LOG_INFO("KEY_K is Pressed");
-			direction =/* glm::mat3(m_Direction) * */glm::vec3(0.f, -transitionSpeed, 0.f);
+			direction = glm::vec3(0.f, -moveSpeed, 0.f);
 			m_Camera = glm::translate(m_Camera, direction);
 			break;
 		}
