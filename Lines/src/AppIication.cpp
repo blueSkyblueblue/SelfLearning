@@ -23,8 +23,10 @@ Application::Application()
 	m_Camera {glm::identity<glm::mat4>()},
 	m_Rotate {glm::identity<glm::mat4>()},
 	m_Direction {glm::identity<glm::mat4>()},
-	m_Pers{ glm::perspective(glm::radians(75.f), (float)INITIAL_WIDTH / INITIAL_HEIGHT, 0.1f, 1000.f)},
+	m_Pers { glm::perspective(glm::radians(75.f), (float)INITIAL_WIDTH / INITIAL_HEIGHT, 0.1f, 1000.f)},
 	m_MVP {glm::identity<glm::mat4>()},
+	m_VerticalRadian {0.f},
+	m_HorizontalRadian {0.f},
 	cursor {nullptr}
 {
 	m_Window = new Window(INITIAL_WIDTH, INITIAL_HEIGHT, "Draw Lines");
@@ -38,6 +40,14 @@ Application::~Application()
 {
 	glfwDestroyCursor(cursor);
 
+	glDeleteBuffers(1, &m_Box);
+	glDeleteBuffers(1, &m_BoxBuffer);
+	glDeleteBuffers(1, &m_BoxIndicesBuffer);
+
+	glDeleteBuffers(1, &m_Floor);
+	glDeleteBuffers(1, &m_FloorBuffer);
+	glDeleteBuffers(1, &m_FloorIndicesBuffer);
+
 	delete m_Window;
 	delete m_Shader;
 
@@ -46,28 +56,51 @@ Application::~Application()
 
 void Application::setup()
 {
-	glViewport(0, 0, INITIAL_WIDTH / 2, INITIAL_HEIGHT / 2);
-
 	glfwSetWindowUserPointer(m_Window->getInstance(), this);
 
 	cursor = glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR);
 	glfwSetCursor(m_Window->getInstance(), cursor);
 
+	glfwSetWindowCloseCallback(m_Window->getInstance(), OnWindowClose);
 	glfwSetKeyCallback(m_Window->getInstance(), OnKeyPressed);
 	glfwSetMouseButtonCallback(m_Window->getInstance(), OnMouseButton);
-//	glfwSetCursorPosCallback(m_Window->getInstance(), OnCursorPos);
+	glfwSetCursorPosCallback(m_Window->getInstance(), OnCursorPos);
 	glfwSetFramebufferSizeCallback(m_Window->getInstance(), OnFramebufferResize);
+
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	io.Fonts->AddFontFromFileTTF("res/fonts/bahnschrift.ttf", 24.0f);
+
+	io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;
+	io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;
+
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+
+	ImGui::StyleColorsDark();
+
+	ImGui_ImplGlfw_InitForOpenGL(m_Window->getInstance(), true);
+	ImGui_ImplOpenGL3_Init("#version 330");
 
 	m_Shader = new Shader("res/shaders/shader.vs", "res/shaders/shader.fs");
 	m_Shader->bind();
 
 	int32_t width, height;
 	glfwGetFramebufferSize(m_Window->getInstance(), &width, &height);
-	m_Pers = glm::perspective(glm::radians(75.0f), (float)width / height, 0.1f, 1000.0f);
+	m_Pers = glm::perspective(glm::radians(75.0f), (float)width / height, 0.1f, 100.0f);
 	m_Camera = glm::translate(m_Camera, glm::vec3(0.f, 0.f, -10.f));
+	
+	glEnable(GL_DEPTH_TEST);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	prepareData();
 }
 
-void Application::run()
+void Application::prepareData()
 {
 	float boxVertices[] = {
 		// Positions			// Colors
@@ -87,17 +120,16 @@ void Application::run()
 		4, 5, 6,	4, 6, 7
 	};
 
-	uint32_t vao, vbo, ibo;
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(1, &vbo);
-	glGenBuffers(1, &ibo);
+	glGenVertexArrays(1, &m_Box);
+	glGenBuffers(1, &m_BoxBuffer);
+	glGenBuffers(1, &m_BoxIndicesBuffer);
 
-	glBindVertexArray(vao);
+	glBindVertexArray(m_Box);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, m_BoxBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(boxVertices), boxVertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BoxIndicesBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(boxIndices), boxIndices, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
@@ -107,132 +139,90 @@ void Application::run()
 
 	glfwSwapInterval(1);
 
-	uint32_t floor, floorBuffer, floorElems;
-	glGenVertexArrays(1, &floor);
-	glGenBuffers(1, &floorBuffer);
-	glGenBuffers(1, &floorElems);
+	glGenVertexArrays(1, &m_Floor);
+	glGenBuffers(1, &m_FloorBuffer);
+	glGenBuffers(1, &m_FloorIndicesBuffer);
 
-	float floorVertices[] = {
+	float m_FloorVertices[] = {
 		-1.0f, -5.0f, 0.0f,		 .7f, .7f, .7f,
 		 1.0f, -5.0f, 0.0f,		 .7f, .7f, .7f
 	};
 
-	uint32_t floorIndices[] = {
+	uint32_t m_FloorIndices[] = {
 		0, 1
 	};
 
-	glBindVertexArray(floor);
-	glBindBuffer(GL_ARRAY_BUFFER, floorBuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(floorVertices), floorVertices, GL_STATIC_DRAW);
+	glBindVertexArray(m_Floor);
+	glBindBuffer(GL_ARRAY_BUFFER, m_FloorBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(m_FloorVertices), m_FloorVertices, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), 0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, floorElems);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(floorIndices), floorIndices, GL_STATIC_DRAW);
-	
-	APP_ASSERT(glGetError() == GL_NO_ERROR, "There are some errors: {}", glGetError());
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_FloorIndicesBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_FloorIndices), m_FloorIndices, GL_STATIC_DRAW);
 
+	APP_ASSERT(glGetError() == GL_NO_ERROR, "There are some errors: {}", glGetError());
+}
+
+void Application::run()
+{
 	glm::mat4 model = glm::identity<glm::mat4>();
 
 	bool show_demo_window = true;
-	bool show_another_window = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
-	ImFontConfig fontConfig;
-	fontConfig.SizePixels = 18.f;
-	io.Fonts->AddFontDefault(&fontConfig);
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
-
-	ImGui::StyleColorsDark();
-
-	ImGui_ImplGlfw_InitForOpenGL(m_Window->getInstance(), true);
-	ImGui_ImplOpenGL3_Init("#version 330");
 
 	m_Running = true;
 	while (m_Running)
 	{
 		processInput();
 
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
+		ImGuiIO& io = ImGui::GetIO();
 		{
-			static float f = 0.0f;
-			static int counter = 0;
-
-			ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-			ImGui::Checkbox("Another Window", &show_another_window);
-
-			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-				counter++;
-			ImGui::SameLine();
-			ImGui::Text("counter = %d", counter);
-
+			ImGui::Begin("Testing!");                         
+			ImGui::Text("Background Color: ");                      
+			ImGui::ColorEdit3("clear color", (float*)&clear_color);
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 			ImGui::End();
 		}
 
-		if (show_another_window)
-		{
-			ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-			ImGui::Text("Hello from another window!");
-			if (ImGui::Button("Close Me"))
-				show_another_window = false;
-			ImGui::End();
-		}
-
-		static float time = 0.f;// = (float)glfwGetTime();
+		static float rotateAngleX = 23.f;// = (float)glfwGetTime();
+		static float rotateAngleY = 54.f;// = (float)glfwGetTime();
+		static float rotateAngleZ = 23.f;// = (float)glfwGetTime();
 		{
 			ImGui::Begin("Draw Lines");
-
-			ImGui::SliderFloat("Rotation", &time, 0.0f, 360.f);
 			ImGui::Text("Set the object rotation angle in degrees");
+			ImGui::SliderFloat("X Rotation", &rotateAngleX, 0.0f, 360.f);
+			ImGui::Text("Set the object rotation angle in degrees");
+			ImGui::SliderFloat("Y Rotation", &rotateAngleY, 0.0f, 360.f);
+			ImGui::Text("Set the object rotation angle in degrees");
+			ImGui::SliderFloat("Z Rotation", &rotateAngleZ, 0.0f, 360.f);
 			ImGui::End();
 		}
 
-		ImGui::Render();
-		int display_w, display_h;
-		glfwGetFramebufferSize(m_Window->getInstance(), &display_w, &display_h);
-		glViewport(0, 0, display_w, display_h);
-		glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-		glClear(GL_COLOR_BUFFER_BIT);
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-		{
-			GLFWwindow* backup_current_context = glfwGetCurrentContext();
-			ImGui::UpdatePlatformWindows();
-			ImGui::RenderPlatformWindowsDefault();
-			glfwMakeContextCurrent(backup_current_context);
-		}
-
+		m_Rotate = glm::rotate(glm::mat4(1.f), glm::radians(m_VerticalRadian), glm::vec3(1.f, 0.f, 0.f))
+			* glm::rotate(glm::mat4(1.f), glm::radians(m_HorizontalRadian), glm::vec3(0.f, 1.f, 0.f));
 		m_MVP = m_Pers * m_Rotate * m_Camera;
 		m_Shader->setUniformMat4("u_MVP", m_MVP);
 
-		glBindVertexArray(vao);
-		glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), glm::radians(time), glm::vec3(0.0f, 1.0f, 1.0f));
+		glBindVertexArray(m_Box);
+		glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), glm::radians(rotateAngleX), glm::vec3(1.0f, 0.0f, 0.0f))
+			* glm::rotate(glm::mat4(1.0f), glm::radians(rotateAngleY), glm::vec3(0.0f, 1.0f, 0.0f))
+			* glm::rotate(glm::mat4(1.0f), glm::radians(rotateAngleZ), glm::vec3(0.0f, 0.0f, 1.0f));
 		m_Shader->setUniformMat4("u_Model", rotate);
 		glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, nullptr);
 
-		glBindVertexArray(floor);
+		glBindVertexArray(m_Floor);
 		m_Shader->setUniformMat4("u_Model", model);
 		glEnable(GL_LINE_SMOOTH);
 		glLineWidth(2.f);
@@ -256,6 +246,17 @@ void Application::run()
 		}
 
 		APP_ASSERT(glGetError() == GL_NO_ERROR, "There are some errors!");
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			GLFWwindow* backup_current_context = glfwGetCurrentContext();
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+			glfwMakeContextCurrent(backup_current_context);
+		}
 
 		m_Window->swapBuffers();
 		glfwPollEvents();
@@ -287,6 +288,12 @@ static void glfw_error_callback(int errorCode, const char* description)
 	LOG_TRACE("DESCRIPTION\n\t {0}", description);
 }
 
+void Application::OnWindowClose(GLFWwindow* window)
+{
+	Application* app = (Application*)glfwGetWindowUserPointer(window);
+	app->m_Running = false;
+}
+
 void Application::OnKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	static bool isFullScreen = false;
@@ -295,7 +302,6 @@ void Application::OnKeyPressed(GLFWwindow* window, int key, int scancode, int ac
 	if (action != GLFW_PRESS && action != GLFW_REPEAT) return;
 	switch (key)
 	{
-
 		case GLFW_KEY_ESCAPE:
 		{
 			app->m_Running = false;
@@ -303,6 +309,8 @@ void Application::OnKeyPressed(GLFWwindow* window, int key, int scancode, int ac
 		}
 		case GLFW_KEY_F:
 		{
+			if (mods != GLFW_MOD_CONTROL) break;
+
 			if (isFullScreen)
 			{
 				glfwSetWindowMonitor(window, nullptr, 300, 200, INITIAL_WIDTH, INITIAL_HEIGHT, 0);
@@ -339,20 +347,47 @@ void Application::OnMouseButton(GLFWwindow* window, int button, int action, int 
 
 void Application::OnCursorPos(GLFWwindow* window, double xPos, double yPos)
 {
+	static float sencitiveness = 0.05f;
+	static float recordPosX = 0.f;
+	static float recordPosY = 0.f;
+	static Application* app = (Application*)glfwGetWindowUserPointer(window);
+	
+	int mouseLeftButtonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 
+	switch (mouseLeftButtonState)
+	{
+		case GLFW_PRESS:
+		{
+			float xOffset = (float)xPos - recordPosX;
+			float yOffset = (float)yPos - recordPosY;
+
+			app->m_HorizontalRadian -= xOffset * sencitiveness;
+			app->m_VerticalRadian -= yOffset * sencitiveness;
+
+			break;
+		}
+		case GLFW_RELEASE:
+		{
+			break;
+		}
+	}
+
+	recordPosX = (float)xPos;
+	recordPosY = (float)yPos;
 }
 
 void Application::OnFramebufferResize(GLFWwindow* window, int width, int height)
 {
 	Application* app = (Application*)glfwGetWindowUserPointer(window);
 	glViewport(0, 0, width, height);
+	if (width == 0 || height == 0) return;
+
 	app->m_Pers = glm::perspective(glm::radians(75.f), (float)width / height, 0.1f, 1000.f);
 }
 
 void Application::processInput()
 {
 	processKey();
-	//processCursor();
 }
 
 void Application::processKey()
@@ -421,27 +456,4 @@ void Application::processKey()
 
 void Application::processCursor()
 {
-	static float sencitiveness = 0.0007f;
-
-	Application* app = (Application*)glfwGetWindowUserPointer(m_Window->getInstance());
-	int width, height;
-	glfwGetFramebufferSize(m_Window->getInstance(), &width, &height);
-
-	double xPos, yPos;
-	glfwGetCursorPos(m_Window->getInstance(), &xPos, &yPos);
-	float xOffset = (float)xPos - (float)width / 2;
-	float yOffset = (float)yPos - (float)height / 2;
-
-	LOG_INFO("----- Cursor Position: [{0}, {1}] -------", xPos, yPos);
-
-	if (xOffset || yOffset)
-	{
-		LOG_WARN("The Cursor Position Offsets: ({0}, {1})", xOffset, yOffset);
-
-		app->m_Direction = glm::rotate(glm::mat4(1.0f), xOffset * sencitiveness, { 0.f, 1.f, 0.f }) * app->m_Direction;
-		app->m_Rotate = glm::rotate(glm::mat4(1.f), yOffset * sencitiveness, { 1.f, 0.f, 0.f })
-			* glm::rotate(glm::mat4(1.0f), xOffset * sencitiveness, { 0.f, 1.f, 0.f }) * app->m_Rotate;
-
-		glfwSetCursorPos(m_Window->getInstance(), (double)width / 2, (double)height / 2);
-	}
 }
